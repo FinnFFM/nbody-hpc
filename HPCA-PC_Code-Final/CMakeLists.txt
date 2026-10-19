@@ -28,33 +28,27 @@ add_executable(nbody
   src/backends/opencl.cpp
 )
 
-# --- SFML Setup (Behalten wie es war) ---
-set(SFML_ROOT "$ENV{HOME}/SFML")
-set(SFML_INCLUDE_DIR "${SFML_ROOT}/include")
-set(SFML_LIB_DIR "${SFML_ROOT}/lib")
-set(SFML_LIBS sfml-graphics sfml-window sfml-system)
+# --- Dependencies ---
+find_package(SFML 2.5 COMPONENTS graphics window system REQUIRED)
+find_package(OpenMP REQUIRED)
+target_include_directories(nbody PRIVATE "${CMAKE_SOURCE_DIR}/include")
+target_link_libraries(nbody PRIVATE sfml-graphics sfml-window sfml-system OpenMP::OpenMP_CXX)
 
-target_include_directories(nbody PRIVATE
-  "${SFML_INCLUDE_DIR}"
-  "${CMAKE_SOURCE_DIR}/include"
-)
-target_link_directories(nbody PRIVATE "${SFML_LIB_DIR}")
-target_link_libraries(nbody PRIVATE ${SFML_LIBS})
-
-# --- Font Copy ---
-add_custom_command(
-  TARGET nbody
-  POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy_if_different
-          "${CMAKE_SOURCE_DIR}/OpenSans-Bold.ttf"
-          "$<TARGET_FILE_DIR:nbody>/OpenSans-Bold.ttf"
-)
-
-# --- OpenMP ---
-find_package(OpenMP)
-if(OpenMP_CXX_FOUND)
-  target_link_libraries(nbody PRIVATE OpenMP::OpenMP_CXX)
+# Use a local font, or Ubuntu's packaged Open Sans font.
+find_file(NBODY_FONT OpenSans-Bold.ttf
+  PATHS "${CMAKE_SOURCE_DIR}" /usr/share/fonts/truetype/open-sans)
+if(NOT NBODY_FONT)
+  message(FATAL_ERROR "Install fonts-open-sans or set -DNBODY_FONT=/path/to/OpenSans-Bold.ttf")
 endif()
+configure_file("${NBODY_FONT}" "${CMAKE_CURRENT_BINARY_DIR}/OpenSans-Bold.ttf" COPYONLY)
+
+# Small builds for execution checks; normal defaults stay unchanged.
+set(NBODY_COUNT 5000 CACHE STRING "Number of orbiting bodies")
+set(NBODY_STEPS 1000 CACHE STRING "Benchmark steps")
+if(NOT NBODY_COUNT MATCHES "^[1-9][0-9]*$" OR NOT NBODY_STEPS MATCHES "^[1-9][0-9]*$")
+  message(FATAL_ERROR "NBODY_COUNT and NBODY_STEPS must be positive integers")
+endif()
+target_compile_definitions(nbody PRIVATE NBODY_COUNT=${NBODY_COUNT} NBODY_STEPS=${NBODY_STEPS})
 
 # --- Compiler Options ---
 target_compile_options(nbody PRIVATE -fno-tree-vectorize)

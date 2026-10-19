@@ -54,7 +54,7 @@ checkError(err, "clCreateContext");
 queue = clCreateCommandQueue(context, device, 0, &err);
 checkError(err, "clCreateCommandQueue");
 
-std::string sourceStr = readKernelSource("../opencl/nbody.cl");
+std::string sourceStr = readKernelSource("nbody.cl");
 const char* source = sourceStr.c_str();
 
 program = clCreateProgramWithSource(context, 1, &source, NULL, &err);
@@ -93,7 +93,7 @@ static int run_opencl(int argc, char** argv)
     opencl_initialized = true;
     }
 
-    const size_t N = n_bodies;
+    const size_t N = n_bodies + 1;
     size_t global = ((N + 255) / 256) * 256;
     size_t local  = 256;
 

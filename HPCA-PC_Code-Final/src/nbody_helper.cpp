@@ -6,9 +6,9 @@
 const float G = 1.f;
 const float dt = 0.05f;
 const float softening = 1.0f;
-const size_t n_bodies = 5000;
+const size_t n_bodies = NBODY_COUNT;
 const float center_mass = 1000.f;
-const int benchmark_steps = 1000;
+const int benchmark_steps = NBODY_STEPS;
 
 static BenchmarkResult* g_benchmark_result = nullptr;
 

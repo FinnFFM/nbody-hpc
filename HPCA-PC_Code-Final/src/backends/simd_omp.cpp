@@ -136,7 +136,7 @@ static void kick_simd_omp(BodySoA& bodies, float dt)
 
 static int run_simd_omp(int argc, char** argv) {
   // Initialisierung (SOA Layout, Anfangskräfte)
-  BodySoA bodies(n_bodies);
+  BodySoA bodies(n_bodies + 1);
   init_bodies_soa(bodies);
   compute_forces_simd_omp(bodies, G, softening);
 
